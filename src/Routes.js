@@ -5,6 +5,7 @@ import NotFound from './containers/NotFound'
 import Login from './containers/Login'
 import AppliedRoute from './components/AppliedRoute'
 import Signup from './containers/Signup'
+import Forgot from './containers/Forgot'
 import AuthenticatedRoute from './components/AuthenticatedRoute'
 import UnauthenticatedRoute from './components/UnauthenticatedRoute'
 export default ({ childProps }) => (
@@ -14,6 +15,12 @@ export default ({ childProps }) => (
       path="/login"
       exact
       component={Login}
+      props={childProps}
+    />
+    <UnauthenticatedRoute
+      path="/forgot"
+      exact
+      component={Forgot}
       props={childProps}
     />
     <UnauthenticatedRoute

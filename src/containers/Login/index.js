@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Auth } from 'aws-amplify'
+import { Link } from 'react-router-dom'
 import { FormGroup, FormControl, ControlLabel } from 'react-bootstrap'
 import LoaderButton from '../../components/LoaderButton'
 import './index.css'
@@ -43,7 +44,7 @@ export default class Login extends Component {
   render() {
     return (
       <div className="Login">
-        <form onSubmit={this.handleSubmit}>
+        <form onSubmit={this.handleSubmit} style={{ textAlign: 'center' }}>
           <FormGroup controlId="email" bsSize="large">
             <ControlLabel>Email</ControlLabel>
             <FormControl
@@ -70,6 +71,9 @@ export default class Login extends Component {
             text="Login"
             loadingText="Logging in…"
           />
+          <Link to="/forgot" className="btn btn-lg">
+            Forgot your password?
+          </Link>
         </form>
       </div>
     )

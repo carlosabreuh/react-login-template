@@ -32,7 +32,13 @@ export default class Home extends Component {
       <div className="lander">
         <h1>Scratch</h1>
         <p>A simple note taking app</p>
-        <div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-evenly',
+            width: '30%',
+          }}
+        >
           <Link to="/login" className="btn btn-info btn-lg">
             Login
           </Link>
