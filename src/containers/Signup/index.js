@@ -5,16 +5,14 @@ import {
   FormControl,
   ControlLabel,
 } from 'react-bootstrap'
-import {
-  AuthenticationDetails,
-  CognitoUserPool,
-} from 'amazon-cognito-identity-js'
-import config from '../../config'
+import { Auth } from 'aws-amplify'
 import LoaderButton from '../../components/LoaderButton'
 import './index.css'
+
 export default class Signup extends Component {
   constructor(props) {
     super(props)
+
     this.state = {
       isLoading: false,
       email: '',
@@ -24,6 +22,7 @@ export default class Signup extends Component {
       newUser: null,
     }
   }
+
   validateForm() {
     return (
       this.state.email.length > 0 &&
@@ -31,88 +30,61 @@ export default class Signup extends Component {
       this.state.password === this.state.confirmPassword
     )
   }
+
   validateConfirmationForm() {
     return this.state.confirmationCode.length > 0
   }
+
   handleChange = event => {
     this.setState({
       [event.target.id]: event.target.value,
     })
   }
+
   handleSubmit = async event => {
     event.preventDefault()
+
     this.setState({ isLoading: true })
+
     try {
-      const newUser = await this.signup(this.state.email, this.state.password)
+      const newUser = await Auth.signUp({
+        username: this.state.email,
+        password: this.state.password,
+      })
       this.setState({
-        newUser: newUser,
+        newUser,
       })
     } catch (e) {
-      console.log(e)
-      alert(e)
+      alert(e.message)
     }
+
     this.setState({ isLoading: false })
   }
+
   handleConfirmationSubmit = async event => {
     event.preventDefault()
+
     this.setState({ isLoading: true })
+
     try {
-      await this.confirm(this.state.newUser, this.state.confirmationCode)
-      await this.authenticate(
-        this.state.newUser,
+      await Auth.confirmSignUp(
         this.state.email,
-        this.state.password
-      )
-      console.log(this.state)
-      this.props.userHasAuthenticated(true)
-      this.props.history.push('/')
+        this.state.confirmationCode
+      ).then(async data => {
+        console.log('confirmSignup: ', data)
+        await Auth.signIn(this.state.email, this.state.password).then(data => {
+          console.log('signIn: ', data)
+          this.props.userHasAuthenticated(true)
+          this.props.history.push('/')
+        })
+      })
     } catch (e) {
-      alert(e)
-      console.log(e)
+      alert(e.message)
       this.setState({ isLoading: false })
     }
   }
-  signup = (email, password) => {
-    const userPool = new CognitoUserPool({
-      UserPoolId: config.cognito.USER_POOL_ID,
-      ClientId: config.cognito.APP_CLIENT_ID,
-    })
-    return new Promise((resolve, reject) =>
-      userPool.signUp(email, password, [], null, (err, result) => {
-        if (err) {
-          reject(err)
-          return
-        }
-        resolve(result.user)
-      })
-    )
-  }
-  confirm = (user, confirmationCode) => {
-    return new Promise((resolve, reject) =>
-      user.confirmRegistration(confirmationCode, true, function(err, result) {
-        if (err) {
-          console.log(err)
-          reject(err)
-          return
-        }
-        resolve(result)
-      })
-    )
-  }
-  authenticate = (user, email, password) => {
-    const authenticationData = {
-      Username: email,
-      Password: password,
-    }
-    const authenticationDetails = new AuthenticationDetails(authenticationData)
-    return new Promise((resolve, reject) =>
-      user.authenticateUser(authenticationDetails, {
-        onSuccess: result => resolve(),
-        onFailure: err => reject(err),
-      })
-    )
-  }
-  renderConfirmationForm = () => {
+
+  renderConfirmationForm() {
     return (
       <form onSubmit={this.handleConfirmationSubmit}>
         <FormGroup controlId="confirmationCode" bsSize="large">
@@ -137,7 +109,8 @@ export default class Signup extends Component {
       </form>
     )
   }
-  renderForm = () => {
+
+  renderForm() {
     return (
       <form onSubmit={this.handleSubmit}>
         <FormGroup controlId="email" bsSize="large">
@@ -177,8 +150,8 @@ export default class Signup extends Component {
       </form>
     )
   }
+
   render() {
-    console.log(this.state)
     return (
       <div className="Signup">
         {this.state.newUser === null
