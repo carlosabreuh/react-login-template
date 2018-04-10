@@ -1,6 +1,10 @@
 .Home .lander {
   padding: 80px 0;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
 .Home .lander h1 {
   font-family: 'Open Sans', sans-serif;

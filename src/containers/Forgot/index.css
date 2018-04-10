@@ -1,0 +1,14 @@
+@media all and (min-width: 480px) {
+  .Forgot {
+    padding: 60px 0;
+  }
+  .Forgot form {
+    margin: 0 auto;
+    max-width: 320px;
+  }
+}
+.Forgot form span.help-block {
+  font-size: 14px;
+  padding-bottom: 10px;
+  color: #999;
+}
