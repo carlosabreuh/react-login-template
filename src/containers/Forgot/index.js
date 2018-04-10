@@ -16,23 +16,21 @@ export default class Forgot extends Component {
     this.state = {
       isLoading: false,
       email: '',
-      password: '',
-      confirmPassword: '',
+      newPassword: '',
       confirmationCode: '',
-      newUser: null,
+      forgotResponse: null,
     }
   }
 
   validateForm() {
-    return (
-      this.state.email.length > 0 &&
-      this.state.password.length > 0 &&
-      this.state.password === this.state.confirmPassword
-    )
+    return this.state.email.length > 0
   }
 
   validateConfirmationForm() {
-    return this.state.confirmationCode.length > 0
+    return (
+      this.state.confirmationCode.length > 0 &&
+      this.state.newPassword.length > 0
+    )
   }
 
   handleChange = event => {
@@ -47,13 +45,9 @@ export default class Forgot extends Component {
     this.setState({ isLoading: true })
 
     try {
-      const newUser = await Auth.signUp({
-        username: this.state.email,
-        password: this.state.password,
-      })
-      this.setState({
-        newUser,
-      })
+      await Auth.forgotPassword(this.state.email).then(async data =>
+        this.setState({ forgotResponse: data })
+      )
     } catch (e) {
       alert(e.message)
     }
@@ -67,16 +61,18 @@ export default class Forgot extends Component {
     this.setState({ isLoading: true })
 
     try {
-      await Auth.confirmSignUp(
+      await Auth.forgotPasswordSubmit(
         this.state.email,
-        this.state.confirmationCode
+        this.state.confirmationCode,
+        this.state.newPassword
       ).then(async data => {
-        console.log('confirmForgot: ', data)
-        await Auth.signIn(this.state.email, this.state.password).then(data => {
-          console.log('signIn: ', data)
-          this.props.userHasAuthenticated(true)
-          this.props.history.push('/')
-        })
+        await Auth.signIn(this.state.email, this.state.newPassword).then(
+          data => {
+            console.log('signIn: ', data)
+            this.props.userHasAuthenticated(true)
+            this.props.history.push('/')
+          }
+        )
       })
     } catch (e) {
       alert(e.message)
@@ -91,11 +87,19 @@ export default class Forgot extends Component {
           <ControlLabel>Confirmation Code</ControlLabel>
           <FormControl
             autoFocus
-            type="tel"
+            type="number"
             value={this.state.confirmationCode}
             onChange={this.handleChange}
           />
           <HelpBlock>Please check your email for the code.</HelpBlock>
+        </FormGroup>
+        <FormGroup controlId="newPassword" bsSize="large">
+          <ControlLabel>New Password</ControlLabel>
+          <FormControl
+            value={this.state.newPassword}
+            onChange={this.handleChange}
+            type="password"
+          />
         </FormGroup>
         <LoaderButton
           block
@@ -122,22 +126,7 @@ export default class Forgot extends Component {
             onChange={this.handleChange}
           />
         </FormGroup>
-        <FormGroup controlId="password" bsSize="large">
-          <ControlLabel>Password</ControlLabel>
-          <FormControl
-            value={this.state.password}
-            onChange={this.handleChange}
-            type="password"
-          />
-        </FormGroup>
-        <FormGroup controlId="confirmPassword" bsSize="large">
-          <ControlLabel>Confirm Password</ControlLabel>
-          <FormControl
-            value={this.state.confirmPassword}
-            onChange={this.handleChange}
-            type="password"
-          />
-        </FormGroup>
+
         <LoaderButton
           block
           bsSize="large"
@@ -154,7 +143,8 @@ export default class Forgot extends Component {
   render() {
     return (
       <div className="Forgot">
-        {this.state.newUser === null
+        <h1 style={{ textAlign: 'center' }}>Forgot your password?</h1>
+        {this.state.forgotResponse === null
           ? this.renderForm()
           : this.renderConfirmationForm()}
       </div>
